@@ -3,6 +3,8 @@ let mapleader=" "
 set nocompatible              " be iMproved, required
 filetype off                  " required
 
+set rtp+=/home/linuxbrew/.linuxbrew/opt/fzf
+
 " set the runtime path to include Vundle and initialize
 set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
@@ -27,10 +29,12 @@ Plugin 'leafgarland/typescript-vim'
 Plugin 'Quramy/tsuquyomi'
 Plugin 'Shougo/vimproc.vim'
 Plugin 'Valloric/YouCompleteMe'
-Plugin 'ctrlpvim/ctrlp.vim'
 Plugin 'scrooloose/nerdtree'
 Plugin 'prettier/vim-prettier'
 Plugin 'crusoexia/vim-monokai'
+Plugin 'junegunn/fzf.vim'
+Plugin 'airblade/vim-gitgutter'
+Plugin 'mileszs/ack.vim'
 
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
@@ -47,6 +51,14 @@ filetype plugin indent on    " required
 " see :h vundle for more details or wiki for FAQ
 " Put your non-Plugin stuff after this line
 " start of easymotion fuzzy search integration
+imap jj <Esc>
+set tabstop=2 shiftwidth=2 expandtab
+set number
+set relativenumber
+set showcmd
+colorscheme monokai
+autocmd InsertEnter,InsertLeave * set cul!
+
 function! s:config_easyfuzzymotion(...) abort
 	return extend(copy({
 				\   'converters': [incsearch#config#fuzzyword#converter()],
@@ -60,9 +72,6 @@ endfunction
 noremap <silent><expr> <Space>/ incsearch#go(<SID>config_easyfuzzymotion())
 " end of easymotion fuzzy search integration
 
-set number
-set relativenumber
-
 " copy and paste from clipboard
 noremap <leader>p "*]p
 noremap <leader>y "+y
@@ -70,21 +79,27 @@ noremap <leader>y "+y
 " prettier
 nmap <Leader>py <Plug>(Prettier)
 
-imap jj <Esc>
-
-set tabstop=2 shiftwidth=2 expandtab
-
+" nerdtree
 autocmd StdinReadPre * let s:std_in=1
 autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+map <leader>r :NERDTreeFind<cr>
 
-let g:ctrlp_custom_ignore = 'node_modules\|DS_Store\|git'
-
+"airline
 let g:airline_theme = 'molokai'
+let g:airline#extensions#tabline#enabled = 1
 
+"prettier
 let g:prettier#autoformat = 0
 autocmd BufWritePre *.js,*.jsx,*.mjs,*.ts,*.tsx,*.css,*.less,*.scss,*.json,*.graphql,*.md,*.vue Prettier
 
-colorscheme monokai
+"Tsu
+autocmd FileType typescript setlocal completeopt+=menu,preview
+nmap <Leader>gd <Plug>(TsuquyomiDefinition)
 
-autocmd InsertEnter,InsertLeave * set cul!
+"fzf
+nmap <Leader>b :Buffers<CR>
+nmap <Leader>f  :Files<CR>
+
+"git
+let g:gitgutter_enabled = 1
