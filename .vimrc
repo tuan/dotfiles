@@ -3,8 +3,6 @@ let mapleader=" "
 set nocompatible              " be iMproved, required
 filetype off                  " required
 
-set rtp+=/home/linuxbrew/.linuxbrew/opt/fzf
-
 " set the runtime path to include Vundle and initialize
 set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
@@ -28,13 +26,15 @@ Plugin 'vim-airline/vim-airline-themes'
 Plugin 'leafgarland/typescript-vim'
 Plugin 'Quramy/tsuquyomi'
 Plugin 'Shougo/vimproc.vim'
-" Plugin 'Valloric/YouCompleteMe'
+Plugin 'Valloric/YouCompleteMe'
 Plugin 'scrooloose/nerdtree'
 Plugin 'prettier/vim-prettier'
-Plugin 'crusoexia/vim-monokai'
 Plugin 'junegunn/fzf'
 Plugin 'junegunn/fzf.vim'
 Plugin 'airblade/vim-gitgutter'
+Plugin 'sjl/gundo.vim'
+Plugin 'Xuyuanp/nerdtree-git-plugin'
+Plugin 'morhetz/gruvbox'
 
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
@@ -56,8 +56,23 @@ set tabstop=2 shiftwidth=2 expandtab
 set number
 set relativenumber
 set showcmd
-colorscheme monokai
-autocmd InsertEnter,InsertLeave * set cul!
+set nowrap
+syntax on
+colorscheme gruvbox
+set background=dark
+
+if has('gui_running')
+  set guifont=ConsolasForPowerline:h16
+endif
+
+" persistent undo
+set undofile
+set undodir=~/.vim/undodir
+
+" cursor shape
+let &t_SI = "\<Esc>]50;CursorShape=1\x7"
+let &t_SR = "\<Esc>]50;CursorShape=2\x7"
+let &t_EI = "\<Esc>]50;CursorShape=0\x7"
 
 function! s:config_easyfuzzymotion(...) abort
 	return extend(copy({
@@ -80,14 +95,22 @@ noremap <leader>y "+y
 nmap <Leader>py <Plug>(Prettier)
 
 " nerdtree
-autocmd StdinReadPre * let s:std_in=1
-autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
-autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 map <leader>r :NERDTreeFind<cr>
+nmap <F6> :NERDTreeToggle<CR>
 
 "airline
-let g:airline_theme = 'molokai'
+let g:airline_theme = 'gruvbox'
 let g:airline#extensions#tabline#enabled = 1
+if !exists('g:airline_symbols')
+  let g:airline_symbols = {}
+endif
+let g:airline_left_sep = '⮀'
+let g:airline_left_alt_sep = '⮁'
+let g:airline_right_sep = '⮂'
+let g:airline_right_alt_sep = '⮃'
+let g:airline_symbols.branch = '⭠'
+let g:airline_symbols.readonly = '⭤'
+let g:airline_symbols.linenr = '⭡'
 
 "prettier
 let g:prettier#autoformat = 0
@@ -101,5 +124,16 @@ nmap <Leader>gd <Plug>(TsuquyomiDefinition)
 nmap <Leader>b :Buffers<CR>
 nmap <Leader>f  :Files<CR>
 
+" gundo
+let g:gundo_prefer_python3 = 1
+nnoremap <F5> :GundoToggle<CR>
+
 "git
 let g:gitgutter_enabled = 1
+
+let g:rg_command = '
+  \ rg --column --line-number --no-heading --fixed-strings --ignore-case --no-ignore --hidden --follow --color "always"
+  \ -g "*.{js,json,php,md,styl,jade,html,config,py,cpp,c,go,hs,rb,conf}"
+  \ -g "!{.git,node_modules,vendor}/*" '
+
+command! -bang -nargs=* Find call fzf#vim#grep('rg --column --line-number --no-heading --fixed-strings --ignore-case --no-ignore --hidden --follow --glob "!.git/*" --color "always" '.shellescape(<q-args>).'| tr -d "\017"', 1, <bang>0)
